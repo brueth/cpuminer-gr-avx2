@@ -740,14 +740,19 @@ void tune(void *input, int thr_id) {
   int curr_test = 0;
 
   // Allocate full memory for now.
-  if (opt_tune_full) {
-#ifdef GR_4WAY
+  if (opt_tune_full) 
+  {
+#ifdef GR_8WAY
+    cn_tune[0][5] = 3;
+#elif  GR_4WAY
     cn_tune[0][5] = 2;
 #else
     // Make sure it stays at 2 pages max on nonAVX2 CPUs.
     cn_tune[0][5] = 1;
 #endif
-  } else {
+  } 
+  else 
+  {
     cn_tune[0][5] = 1;
   }
   AllocateNeededMemory(true);
@@ -799,8 +804,8 @@ void tune(void *input, int thr_id) {
         }
         if (thr_id == 0 && pf == 0) {
           applog(LOG_INFO,
-                 "Testing: %s (%s) + %s (%s) + %s (%s) - %d/%d %.1lf%% ~%.1lf "
-                 "min remaining.",
+                 "Test en cours : %s (%s) + %s (%s) + %s (%s) - %d/%d %.1lf%% ~%.1lf "
+                 "minutes restantes.",
                  variant_name(cn[i][0]), variant_way(config[0]),
                  variant_name(cn[i][1]), variant_way(config[1]),
                  variant_name(cn[i][2]), variant_way(config[2]), curr_test,
@@ -847,7 +852,7 @@ void tune(void *input, int thr_id) {
 
     if (thr_id == 0) {
       applog(LOG_NOTICE,
-             "Best config for rotation %02d.%d: %d %d %d %d %d %d + %d "
+             "Meilleure rotation pour la variante %02d.%d: %d %d %d %d %d %d + %d "
              "threads -> "
              "%.02lf H/s",
              (i / 2) + 1, i % 2 + 1, cn_tune[i][0], cn_tune[i][1],
@@ -943,7 +948,7 @@ void tune(void *input, int thr_id) {
       prefetch_l1 = prefetch_tune[i];
 
       if (thr_id == 0) {
-        applog(LOG_INFO, "Testing: %s (%s) + %s (%s) + %s (%s) - %d threads",
+        applog(LOG_INFO, "Test avec: %s (%s) + %s (%s) + %s (%s) - %d threads",
                variant_name(cn[i][0]), variant_way(cn_config[variant[0]]),
                variant_name(cn[i][1]), variant_way(cn_config[variant[1]]),
                variant_name(cn[i][2]), variant_way(cn_config[variant[2]]),
@@ -953,14 +958,10 @@ void tune(void *input, int thr_id) {
       tune_config(input, thr_id, i);
       sync_conf();
       if (thr_id == 0) {
-        if (best_hashrate < bench_hashrate) {
+        if (bench_hashrate > best_hashrate) {
           best_hashrate = bench_hashrate;
           final_disabled_threads = disabled_threads;
-        } else {
-          // If current thread config is not better, further search is not
-          // necessary and can be skipped.
-          stop_thread_tune = true;
-        }
+        } 
         bench_hashrate = 0;
         bench_time = 0;
         bench_hashes = 0;

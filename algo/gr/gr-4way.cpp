@@ -433,7 +433,7 @@ int scanhash_gr_4way(struct work *work, uint32_t max_nonce,
   if (opt_benchmark) {
     sleep(1);
     if (thr_id == 0) {
-      applog(LOG_BLUE, "Starting benchmark. Benchmark takes %.0lfs to complete",
+      applog(LOG_BLUE, "Debut du benchmark. Ca va prendre %.0lfs pour finir",
              gr_benchmark_time / 1e6);
     }
     benchmark(pdata, thr_id, 0);
