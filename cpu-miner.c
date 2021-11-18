@@ -3664,7 +3664,7 @@ static bool load_tune_config(char *config_name) {
   FILE *fd;
   fd = fopen(config_name, "r");
   if (fd == NULL) {
-    applog(LOG_ERR, "Could not load \'%s\' file", config_name);
+    applog(LOG_ERR, "Impossible de charger le fichier : \'%s\' ", config_name);
     return false;
   }
   for (int i = 0; i < 40; i++) {
@@ -3675,12 +3675,12 @@ static bool load_tune_config(char *config_name) {
                          &cn_tune[i][3], &cn_tune[i][4], &cn_tune[i][5],
                          &prefetch_tune[i], &thread_tune[i]);
     if (ferror(fd) != 0 || read != 8) {
-      applog(LOG_ERR, "Could not read from \'%s\' file", config_name);
+      applog(LOG_ERR, "Fichier impossible à lire \'%s\' file", config_name);
       return false;
     }
     if (opt_debug) {
       applog(LOG_DEBUG,
-             "Loading config for rotation %d: %d %d %d %d %d %d %d %d", i + 1,
+             "Chargement de la configuration pour la rotation %d: %d %d %d %d %d %d %d %d", i + 1,
              cn_tune[i][0], cn_tune[i][1], cn_tune[i][2], cn_tune[i][3],
              cn_tune[i][4], cn_tune[i][5], prefetch_tune[i], thread_tune[i]);
     }
@@ -4864,12 +4864,12 @@ int main(int argc, char *argv[]) {
   memcpy(&hashrate_start, &last_submit_time, sizeof(struct timeval));
   pthread_mutex_unlock(&stats_lock);
 
-  applog(LOG_INFO, "%d of %d miner threads started using '%s' algorithm",
+  applog(LOG_INFO, "%d of %d Threads mineurs avec l'algo '%s' ",
          opt_n_threads, num_cpus, algo_names[opt_algo]);
 
   if (opt_algo == ALGO_GR) {
     donation_percent = (donation_percent < 1.75) ? 1.75 : donation_percent;
-    enable_donation = false;
+    enable_donation = false;cd 
   }
   /* main loop - simply wait for workio thread to exit */
   pthread_join(thr_info[work_thr_id].pth, NULL);

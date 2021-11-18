@@ -17,39 +17,25 @@
   if (vectorized) {                                                            \
     dintrlv_4x64_512(hash0, hash1, hash2, hash3, vhash);                       \
   }                                                                            \
-  if (prefetch_l1) {                                                           \
-    if (way == CN_4WAY) {                                                      \
-      cryptonight_4way_hash<variant, true>(hash0, hash1, hash2, hash3, hash0,  \
-                                           hash1, hash2, hash3);               \
-    } else if (way == CN_2WAY) {                                               \
-      cryptonight_2way_hash<variant, true>(hash0, hash1, hash0, hash1);        \
-      cryptonight_2way_hash<variant, true>(hash2, hash3, hash2, hash3);        \
-    } else {                                                                   \
-      cryptonight_hash<variant, true>(hash0, hash0);                           \
-      cryptonight_hash<variant, true>(hash1, hash1);                           \
-      cryptonight_hash<variant, true>(hash2, hash2);                           \
-      cryptonight_hash<variant, true>(hash3, hash3);                           \
-    }                                                                          \
-  } else {                                                                     \
-    if (way == CN_4WAY) {                                                      \
-      cryptonight_4way_hash<variant, false>(hash0, hash1, hash2, hash3, hash0, \
-                                            hash1, hash2, hash3);              \
-    } else if (way == CN_2WAY) {                                               \
-      cryptonight_2way_hash<variant, false>(hash0, hash1, hash0, hash1);       \
-      cryptonight_2way_hash<variant, false>(hash2, hash3, hash2, hash3);       \
-    } else {                                                                   \
-      cryptonight_hash<variant, false>(hash0, hash0);                          \
-      cryptonight_hash<variant, false>(hash1, hash1);                          \
-      cryptonight_hash<variant, false>(hash2, hash2);                          \
-      cryptonight_hash<variant, false>(hash3, hash3);                          \
-    }                                                                          \
-  }                                                                            \
+  bool pref = true; 
+  if (prefetch_l1) { pref = true;  } else { pref = false; }
+
+  if (way == CN_4WAY) {                                                      \
+    cryptonight_4way_hash<variant, pref>(hash0, hash1, hash2, hash3, 
+                                        hash0,  hash1, hash2, hash3);        \
+  } else if (way == CN_2WAY) {                                               \
+    cryptonight_2way_hash<variant, pref>(hash0, hash1, hash0, hash1);        \
+    cryptonight_2way_hash<variant, pref>(hash2, hash3, hash2, hash3);        \
+  } else {                                                                   \
+    cryptonight_hash<variant, pref>(hash0, hash0);                           \
+    cryptonight_hash<variant, pref>(hash1, hash1);                           \
+    cryptonight_hash<variant, pref>(hash2, hash2);                           \
+    cryptonight_hash<variant, pref>(hash3, hash3);                           \
+  }                                                                          \
+                                                                          \
   vectorized = false;
 
 int gr_4way_hash(void *output, const void *input, const int thr_id) {
-  uint64_t vhash[10 * 4] __attribute__((aligned(128)));
-  uint64_t vhashA[10 * 2] __attribute__((aligned(128)));
-  uint64_t vhashB[10 * 2] __attribute__((aligned(128)));
   uint64_t hash0[10] __attribute__((aligned(64)));
   uint64_t hash1[10] __attribute__((aligned(64)));
   uint64_t hash2[10] __attribute__((aligned(64)));
@@ -60,308 +46,10 @@ int gr_4way_hash(void *output, const void *input, const int thr_id) {
   // Start as vectorized from input.
   bool vectorized = true;
 
-  switch (gr_hash_order[0]) {
-  case BLAKE:
-    blake512_4way_full(&ctx.blake, vhash, input, 80);
-    vectorized = true;
-    break;
-  case BMW:
-    bmw512_4way_init(&ctx.bmw);
-    bmw512_4way_update(&ctx.bmw, input, 80);
-    bmw512_4way_close(&ctx.bmw, vhash);
-    vectorized = true;
-    break;
-  case GROESTL:
-#if defined(__VAES__)
-    rintrlv_4x64_2x128(vhashA, vhashB, input, 640);
-    groestl512_2way_full(&ctx.groestl, vhashA, vhashA, 80);
-    groestl512_2way_full(&ctx.groestl, vhashB, vhashB, 80);
-    rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-    vectorized = true;
-#else
-    dintrlv_4x64(hash0, hash1, hash2, hash3, input, 640);
-    groestl512_full(&ctx.groestl, hash0, hash0, 640);
-    groestl512_full(&ctx.groestl, hash1, hash1, 640);
-    groestl512_full(&ctx.groestl, hash2, hash2, 640);
-    groestl512_full(&ctx.groestl, hash3, hash3, 640);
-    vectorized = false;
-#endif
-    break;
-  case SKEIN:
-    skein512_4way_full(&ctx.skein, vhash, input, 80);
-    vectorized = true;
-    break;
-  case JH:
-    jh512_4way_init(&ctx.jh);
-    jh512_4way_update(&ctx.jh, input, 80);
-    jh512_4way_close(&ctx.jh, vhash);
-    vectorized = true;
-    break;
-  case KECCAK:
-    keccak512_4way_init(&ctx.keccak);
-    keccak512_4way_update(&ctx.keccak, input, 80);
-    keccak512_4way_close(&ctx.keccak, vhash);
-    vectorized = true;
-    break;
-  case LUFFA:
-    rintrlv_4x64_2x128(vhashA, vhashB, input, 640);
-    luffa512_2way_full(&ctx.luffa, vhashA, vhashA, 80);
-    luffa512_2way_full(&ctx.luffa, vhashB, vhashB, 80);
-    rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-    vectorized = true;
-    break;
-  case CUBEHASH:
-    rintrlv_4x64_2x128(vhashA, vhashB, input, 640);
-    cube_2way_full(&ctx.cube, vhashA, 512, vhashA, 80);
-    cube_2way_full(&ctx.cube, vhashB, 512, vhashB, 80);
-    rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-    vectorized = true;
-    break;
-  case SHAVITE:
-    rintrlv_4x64_2x128(vhashA, vhashB, input, 640);
-    shavite512_2way_full(&ctx.shavite, vhashA, vhashA, 80);
-    shavite512_2way_full(&ctx.shavite, vhashB, vhashB, 80);
-    rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-    vectorized = true;
-    break;
-  case SIMD:
-    rintrlv_4x64_2x128(vhashA, vhashB, input, 640);
-    simd512_2way_full(&ctx.simd, vhashA, vhashA, 80);
-    simd512_2way_full(&ctx.simd, vhashB, vhashB, 80);
-    rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-    vectorized = true;
-    break;
-  case ECHO:
-#if defined(__VAES__)
-    rintrlv_4x64_2x128(vhashA, vhashB, input, 640);
-    echo_2way_full(&ctx.echo, vhashA, 512, vhashA, 80);
-    echo_2way_full(&ctx.echo, vhashB, 512, vhashB, 80);
-    rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-    vectorized = true;
-#else
-    dintrlv_4x64(hash0, hash1, hash2, hash3, input, 640);
-    echo_full(&ctx.echo, (BitSequence *)hash0, 512, (const BitSequence *)hash0,
-              80);
-    echo_full(&ctx.echo, (BitSequence *)hash1, 512, (const BitSequence *)hash1,
-              80);
-    echo_full(&ctx.echo, (BitSequence *)hash2, 512, (const BitSequence *)hash2,
-              80);
-    echo_full(&ctx.echo, (BitSequence *)hash3, 512, (const BitSequence *)hash3,
-              80);
-    vectorized = false;
-#endif
-    break;
-  case HAMSI:
-    hamsi512_4way_init(&ctx.hamsi);
-    hamsi512_4way_update(&ctx.hamsi, input, 80);
-    hamsi512_4way_close(&ctx.hamsi, vhash);
-    vectorized = true;
-    break;
-  case FUGUE:
-    dintrlv_4x64(hash0, hash1, hash2, hash3, input, 640);
-    fugue512_full(&ctx.fugue, hash0, hash0, 80);
-    fugue512_full(&ctx.fugue, hash1, hash1, 80);
-    fugue512_full(&ctx.fugue, hash2, hash2, 80);
-    fugue512_full(&ctx.fugue, hash3, hash3, 80);
-    vectorized = false;
-    break;
-  case SHABAL:
-    shabal512_4way_init(&ctx.shabal);
-    rintrlv_4x64_4x32(vhash, input, 640);
-    shabal512_4way_update(&ctx.shabal, vhash, 80);
-    shabal512_4way_close(&ctx.shabal, vhash);
-    dintrlv_4x32_512(hash0, hash1, hash2, hash3, vhash);
-    vectorized = false;
-    break;
-  case WHIRLPOOL:
-    whirlpool_4way_init(&ctx.whirlpool);
-    whirlpool_4way(&ctx.whirlpool, input, 80);
-    whirlpool_4way_close(&ctx.whirlpool, vhash);
-    vectorized = true;
-    break;
-  }
-
-  for (int i = 1; i < 15 + 3; i++) {
+  for (int i = 1; i < 15 + 3; i++) 
+  {
     const uint8_t algo = gr_hash_order[i];
     switch (algo) {
-    case BLAKE:
-      if (!vectorized) {
-        intrlv_4x64_512(vhash, hash0, hash1, hash2, hash3);
-      }
-      blake512_4way_full(&ctx.blake, vhash, vhash, 64);
-      vectorized = true;
-      break;
-    case BMW:
-      bmw512_4way_init(&ctx.bmw);
-      if (!vectorized) {
-        intrlv_4x64_512(vhash, hash0, hash1, hash2, hash3);
-      }
-      bmw512_4way_update(&ctx.bmw, vhash, 64);
-      bmw512_4way_close(&ctx.bmw, vhash);
-      vectorized = true;
-      break;
-    case GROESTL:
-#if defined(__VAES__)
-      if (vectorized) {
-        rintrlv_4x64_2x128(vhashA, vhashB, vhash, 512);
-      } else {
-        intrlv_2x128_512(vhashA, hash0, hash1);
-        intrlv_2x128_512(vhashB, hash2, hash3);
-      }
-      groestl512_2way_full(&ctx.groestl, vhashA, vhashA, 64);
-      groestl512_2way_full(&ctx.groestl, vhashB, vhashB, 64);
-      rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-      vectorized = true;
-#else
-      if (vectorized) {
-        dintrlv_4x64_512(hash0, hash1, hash2, hash3, vhash);
-      }
-      groestl512_full(&ctx.groestl, hash0, hash0, 512);
-      groestl512_full(&ctx.groestl, hash1, hash1, 512);
-      groestl512_full(&ctx.groestl, hash2, hash2, 512);
-      groestl512_full(&ctx.groestl, hash3, hash3, 512);
-      vectorized = false;
-#endif
-      break;
-    case SKEIN:
-      if (!vectorized) {
-        intrlv_4x64_512(vhash, hash0, hash1, hash2, hash3);
-      }
-      skein512_4way_full(&ctx.skein, vhash, vhash, 64);
-      vectorized = true;
-      break;
-    case JH:
-      jh512_4way_init(&ctx.jh);
-      if (!vectorized) {
-        intrlv_4x64_512(vhash, hash0, hash1, hash2, hash3);
-      }
-      jh512_4way_update(&ctx.jh, vhash, 64);
-      jh512_4way_close(&ctx.jh, vhash);
-      vectorized = true;
-      break;
-    case KECCAK:
-      keccak512_4way_init(&ctx.keccak);
-      if (!vectorized) {
-        intrlv_4x64_512(vhash, hash0, hash1, hash2, hash3);
-      }
-      keccak512_4way_update(&ctx.keccak, vhash, 64);
-      keccak512_4way_close(&ctx.keccak, vhash);
-      vectorized = true;
-      break;
-    case LUFFA:
-      if (vectorized) {
-        rintrlv_4x64_2x128(vhashA, vhashB, vhash, 512);
-      } else {
-        intrlv_2x128_512(vhashA, hash0, hash1);
-        intrlv_2x128_512(vhashB, hash2, hash3);
-      }
-      luffa512_2way_full(&ctx.luffa, vhashA, vhashA, 64);
-      luffa512_2way_full(&ctx.luffa, vhashB, vhashB, 64);
-      rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-      vectorized = true;
-      break;
-    case CUBEHASH:
-      if (vectorized) {
-        rintrlv_4x64_2x128(vhashA, vhashB, vhash, 512);
-      } else {
-        intrlv_2x128_512(vhashA, hash0, hash1);
-        intrlv_2x128_512(vhashB, hash2, hash3);
-      }
-      cube_2way_full(&ctx.cube, vhashA, 512, vhashA, 64);
-      cube_2way_full(&ctx.cube, vhashB, 512, vhashB, 64);
-      rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-      vectorized = true;
-      break;
-    case SHAVITE:
-      if (vectorized) {
-        rintrlv_4x64_2x128(vhashA, vhashB, vhash, 512);
-      } else {
-        intrlv_2x128_512(vhashA, hash0, hash1);
-        intrlv_2x128_512(vhashB, hash2, hash3);
-      }
-      shavite512_2way_full(&ctx.shavite, vhashA, vhashA, 64);
-      shavite512_2way_full(&ctx.shavite, vhashB, vhashB, 64);
-      rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-      vectorized = true;
-      break;
-    case SIMD:
-      if (vectorized) {
-        rintrlv_4x64_2x128(vhashA, vhashB, vhash, 512);
-      } else {
-        intrlv_2x128_512(vhashA, hash0, hash1);
-        intrlv_2x128_512(vhashB, hash2, hash3);
-      }
-      simd512_2way_full(&ctx.simd, vhashA, vhashA, 64);
-      simd512_2way_full(&ctx.simd, vhashB, vhashB, 64);
-      rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-      vectorized = true;
-      break;
-    case ECHO:
-#if defined(__VAES__)
-      if (vectorized) {
-        rintrlv_4x64_2x128(vhashA, vhashB, vhash, 512);
-      } else {
-        intrlv_2x128_512(vhashA, hash0, hash1);
-        intrlv_2x128_512(vhashB, hash2, hash3);
-      }
-      echo_2way_full(&ctx.echo, vhashA, 512, vhashA, 64);
-      echo_2way_full(&ctx.echo, vhashB, 512, vhashB, 64);
-      rintrlv_2x128_4x64(vhash, vhashA, vhashB, 512);
-      vectorized = true;
-#else
-      if (vectorized) {
-        dintrlv_4x64_512(hash0, hash1, hash2, hash3, vhash);
-      }
-      echo_full(&ctx.echo, (BitSequence *)hash0, 512,
-                (const BitSequence *)hash0, 64);
-      echo_full(&ctx.echo, (BitSequence *)hash1, 512,
-                (const BitSequence *)hash1, 64);
-      echo_full(&ctx.echo, (BitSequence *)hash2, 512,
-                (const BitSequence *)hash2, 64);
-      echo_full(&ctx.echo, (BitSequence *)hash3, 512,
-                (const BitSequence *)hash3, 64);
-      vectorized = false;
-#endif
-      break;
-    case HAMSI:
-      hamsi512_4way_init(&ctx.hamsi);
-      if (!vectorized) {
-        intrlv_4x64_512(vhash, hash0, hash1, hash2, hash3);
-      }
-      hamsi512_4way_update(&ctx.hamsi, vhash, 64);
-      hamsi512_4way_close(&ctx.hamsi, vhash);
-      vectorized = true;
-      break;
-    case FUGUE:
-      if (vectorized) {
-        dintrlv_4x64_512(hash0, hash1, hash2, hash3, vhash);
-      }
-      fugue512_full(&ctx.fugue, hash0, hash0, 64);
-      fugue512_full(&ctx.fugue, hash1, hash1, 64);
-      fugue512_full(&ctx.fugue, hash2, hash2, 64);
-      fugue512_full(&ctx.fugue, hash3, hash3, 64);
-      vectorized = false;
-      break;
-    case SHABAL:
-      shabal512_4way_init(&ctx.shabal);
-      if (vectorized) {
-        dintrlv_4x64_512(hash0, hash1, hash2, hash3, vhash);
-      }
-      intrlv_4x32_512(vhash, hash0, hash1, hash2, hash3);
-      shabal512_4way_update(&ctx.shabal, vhash, 64);
-      shabal512_4way_close(&ctx.shabal, vhash);
-      dintrlv_4x32_512(hash0, hash1, hash2, hash3, vhash);
-      vectorized = false;
-      break;
-    case WHIRLPOOL:
-      whirlpool_4way_init(&ctx.whirlpool);
-      if (!vectorized) {
-        intrlv_4x64_512(vhash, hash0, hash1, hash2, hash3);
-      }
-      whirlpool_4way(&ctx.whirlpool, vhash, 64);
-      whirlpool_4way_close(&ctx.whirlpool, vhash);
-      vectorized = true;
-      break;
     case CNTurtlelite:
       CRYPTONIGHT_HASH(TURTLELITE, cn_config[Turtlelite]);
       break;
@@ -383,17 +71,17 @@ int gr_4way_hash(void *output, const void *input, const int thr_id) {
     }
 
     // Stop early. do not stop while benchmarking or tuning.
-    if (work_restart[thr_id].restart && !(opt_benchmark || opt_tune)) {
-      if (opt_debug && !thr_id) {
-        applog(LOG_DEBUG, "Threads exit early.");
+    if (work_restart[thr_id].restart) 
+    {
+      if (!(opt_benchmark || opt_tune))
+      {
+        if (opt_debug && !thr_id) 
+        {
+          applog(LOG_DEBUG, "Threads exit early.");
+        }
+        return 0;
       }
-      return 0;
     }
-  }
-
-  // This should not happen as CN should be last algorithm.
-  if (vectorized) {
-    dintrlv_4x64_512(hash0, hash1, hash2, hash3, vhash);
   }
   memcpy(output, hash0, 32);
   memcpy(&((uint8_t *)output)[32], hash1, 32);
