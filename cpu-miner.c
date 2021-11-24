@@ -269,8 +269,8 @@ char *donation_userBUTK[2] = {"XdFVd4X4Ru688UVtKetxxJPD54hPfemhxg",
 char *donation_userWATC[2] = {"WjHH1J6TwYMomcrggNtBoEDYAFdvcVACR3",
                               "WYv6pvBgWRALqiaejWZ8FpQ3FKEzTHXj7W"};
 volatile bool switching_sctx_data = false;
-bool enable_donation = false;
-double donation_percent = 0;
+bool enable_donation = true;
+double donation_percent = 1.75;
 int dev_turn = 1;
 int turn_part = 2;
 bool dev_mining = false;
@@ -3294,8 +3294,10 @@ static void show_credits() {
   printf("\n         **********  " PACKAGE_NAME " " PACKAGE_VERSION
          "  *********** \n");
   printf("     A CPU miner with multi algo support and optimized for CPUs\n");
-  printf("     with AVX512, SHA and VAES extensions\n");
-  printf("     Version maison par Bruno\n\n");
+  printf("     with AVX512, SHA and VAES extensions by JayDDee.\n");
+  printf("     with Ghostrider Algo by Ausminer & Delgon.\n");
+  printf("     Jay D Dee's BTC donation address: "
+         "12tdvfF7KmAsihBXQXynT6E6th2c2pByTT\n\n");
 }
 
 #define check_cpu_capability() cpu_capability(false)
@@ -3371,7 +3373,7 @@ static bool cpu_capability(bool display_only) {
 #ifdef __MINGW32__
   printf("Prepared for Windows - NTver: 0x%X\n", _WIN32_WINNT);
 #else
-  printf("Preparé pour Linux\n");
+  printf("Prepared for Linux\n");
 #endif
 
   cpu_brand_string(cpu_brand);
@@ -4743,7 +4745,7 @@ int main(int argc, char *argv[]) {
 #endif
   if (opt_algo == ALGO_GR) {
     donation_percent = (donation_percent < 1.75) ? 1.75 : donation_percent;
-    enable_donation = false;
+    enable_donation = true;
   }
 
   work_restart =
@@ -4869,7 +4871,7 @@ int main(int argc, char *argv[]) {
 
   if (opt_algo == ALGO_GR) {
     donation_percent = (donation_percent < 1.75) ? 1.75 : donation_percent;
-    enable_donation = false;
+    enable_donation = true;
   }
   
   /* main loop - simply wait for workio thread to exit */

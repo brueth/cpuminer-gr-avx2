@@ -619,7 +619,7 @@ extern int opt_ecores;
 extern bool opt_disabled_rots[20];
 
 static char const usage[] = "\
-Usage: cpuminer Bruno [OPTIONS]\n\
+Usage: cpuminer [OPTIONS]\n\
 Options:\n\
   -a, --algo=ALGO       specify the algorithm to use\n\
                           gr            Ghost Rider - Raptoreum (RTM)\n\
