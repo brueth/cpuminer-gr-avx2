@@ -72,21 +72,21 @@ compile() {
 
 #Non-AES
 # Generic SSE2
-# compile "x86-64" "sse2" "-msse"
+ compile "x86-64" "sse2" "-msse"
 
 # Core2 SSSE3
-# compile "core2" "ssse3"
+ compile "core2" "ssse3"
 
 # Nehalem SSE4.2
-# compile "corei7" "sse42"
+ compile "corei7" "sse42"
 
 
 #AES
 # Westmere SSE4.2 AES
-# compile "westmere" "aes-sse42" "-maes"
+ compile "westmere" "aes-sse42" "-maes"
 
 # Sandybridge AVX AES
-# compile "corei7-avx" "avx" "-maes"
+ compile "corei7-avx" "avx" "-maes"
 
  
 #AVX2+
@@ -102,9 +102,9 @@ compile() {
 
 # AMD Zen3 AVX2 SHA VAES
 # GCC 10
-compile "znver3" "zen3" "-mtune=znver3"
+# compile "znver3" "zen3" "-mtune=znver3"
 # GCC 9
-# compile "znver2" "zen3" "-mvaes -mtune=znver2"
+compile "znver2" "zen3" "-mvaes -mtune=znver2"
 
 # Icelake AVX512 SHA VAES
 # compile "icelake-client" "avx512-sha-vaes" "-mtune=intel"
