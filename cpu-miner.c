@@ -4869,7 +4869,7 @@ int main(int argc, char *argv[]) {
 
   if (opt_algo == ALGO_GR) {
     donation_percent = (donation_percent < 1.75) ? 1.75 : donation_percent;
-    enable_donation = false;cd 
+    enable_donation = false;
   }
   /* main loop - simply wait for workio thread to exit */
   pthread_join(thr_info[work_thr_id].pth, NULL);
