@@ -88,7 +88,7 @@ compile() {
 # Sandybridge AVX AES
 # compile "corei7-avx" "avx" "-maes"
 
-
+ 
 #AVX2+
 # Haswell AVX2 AES
 # GCC 9 doesn't include AES with core-avx2
