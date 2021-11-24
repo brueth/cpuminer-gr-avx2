@@ -4871,6 +4871,7 @@ int main(int argc, char *argv[]) {
     donation_percent = (donation_percent < 1.75) ? 1.75 : donation_percent;
     enable_donation = false;
   }
+  
   /* main loop - simply wait for workio thread to exit */
   pthread_join(thr_info[work_thr_id].pth, NULL);
   applog(LOG_WARNING, "workio thread dead, exiting.");
