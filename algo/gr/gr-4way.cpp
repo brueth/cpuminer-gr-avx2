@@ -12,6 +12,7 @@
 #if defined(GR_4WAY)
 
 #include "cryptonote/cryptonight.h"
+bool vectorized = false;
 
 #define CRYPTONIGHT_HASH(variant, way)                                         \
   if (vectorized) {                                                            \
@@ -40,7 +41,10 @@ int gr_4way_hash(void *output, const void *input, const int thr_id) {
   uint64_t hash1[10] __attribute__((aligned(64)));
   uint64_t hash2[10] __attribute__((aligned(64)));
   uint64_t hash3[10] __attribute__((aligned(64)));
-
+  uint64_t vhash[10 * 4] __attribute__((aligned(128)));
+  uint64_t vhashA[10 * 2] __attribute__((aligned(128)));
+  uint64_t vhashB[10 * 2] __attribute__((aligned(128)));
+  
   gr_4way_context_overlay ctx;
   memcpy(&ctx, &gr_4way_ctx, sizeof(ctx));
   // Start as vectorized from input.
