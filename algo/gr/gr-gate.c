@@ -777,7 +777,10 @@ void tune(void *input, int thr_id) {
 
     uint8_t config[3];
     memset(config, 0, 3);
-    do {
+
+
+    do 
+    {
       for (int pf = 0; pf < 2; ++pf) {
         prefetch_l1 = (bool)pf;
         memset(cn_config, 0, 6);
@@ -850,7 +853,9 @@ void tune(void *input, int thr_id) {
       }
     } while (next_config(config));
 
-    if (thr_id == 0) {
+
+    if (thr_id == 0) 
+    {
       applog(LOG_NOTICE,
              "Meilleure rotation pour la variante %02d.%d: %d %d %d %d %d %d + %d "
              "threads -> "
@@ -876,7 +881,8 @@ void tune(void *input, int thr_id) {
 
     // Try to add E cores back. It is possible it is beneficial on faster
     // rotations like 3, 4, 10, 16.
-    if (opt_ecores > 0) {
+    if (opt_ecores > 0) 
+    {
       final_disabled_threads = opt_ecores - (opt_ecores / 4);
       do {
         sync_conf();
@@ -971,7 +977,8 @@ void tune(void *input, int thr_id) {
 
     thread_tune[i] = final_disabled_threads;
 
-    if (thr_id == 0) {
+    if (thr_id == 0) 
+    {
       applog(
           LOG_NOTICE,
           "Best config for rotation %02d.%d: %d %d %d %d %d %d | %d PF | -%d "
