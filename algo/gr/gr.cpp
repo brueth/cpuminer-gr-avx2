@@ -40,7 +40,9 @@ int gr_hash(void *output, const void *input0, const void *input1,
   gr_context_overlay ctx;
   memcpy(&ctx, &gr_ctx, sizeof(ctx));
 
-  switch (gr_hash_order[0]) {
+  for (int i = 1; i < 15 + 3; i++) {
+    const uint8_t algo = gr_hash_order[i];
+    switch (algo) {
     case CNTurtlelite:
       CRYPTONIGHT_HASH(TURTLELITE, cn_config[Turtlelite]);
       break;
