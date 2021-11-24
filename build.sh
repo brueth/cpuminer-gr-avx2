@@ -19,7 +19,7 @@ if [[ $GCC_MAJOR == 8 || $GCC_MAJOR == 9 ]]; then
 elif [[ $GCC_MAJOR -ge 10 ]]; then
 
   CFLAGS="-O3 -march=native -mtune=native" \
-  CXXFLAGS="$CFLAGS -std=c++20 -Wno-ignored-attributes" \
+  CXXFLAGS="$CFLAGS -std=c++2a -Wno-ignored-attributes" \
   ./configure --with-curl
 
 else

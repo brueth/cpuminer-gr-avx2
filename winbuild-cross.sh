@@ -16,7 +16,7 @@ export MINGW_LIB="/usr/x86_64-w64-mingw32/lib"
 export GCC_MINGW_LIB="/usr/lib/gcc/x86_64-w64-mingw32/10-win32"
 # used by GCC
 export LDFLAGS="-L$LOCAL_LIB/curl/lib/.libs -L$LOCAL_LIB/gmp/.libs -L$LOCAL_LIB/openssl"
-
+ 
 # make link to local gmp header file.
 rm ./gmp.h 2>/dev/null
 ln -s $LOCAL_LIB/gmp/gmp.h ./gmp.h
