@@ -98,13 +98,13 @@ compile() {
 #compile "znver1" "zen" "-mtune=znver1"
 
 # AMD Zen2 AVX2 SHA
-compile "znver2" "zen2" "-mtune=znver2"
+#compile "znver2" "zen2" "-mtune=znver2"
 
 # AMD Zen3 AVX2 SHA VAES
 # GCC 10
-compile "znver3" "zen3" "-mtune=znver3"
+# compile "znver3" "zen3" "-mtune=znver3"
 # GCC 9
-# compile "znver2" "zen3" "-mvaes -mtune=znver2"
+compile "znver2" "zen3" "-mvaes -mtune=znver2"
 
 # Icelake AVX512 SHA VAES
 #compile "icelake-client" "avx512-sha-vaes" "-mtune=intel"
