@@ -105,7 +105,7 @@ int scanhash_gr(struct work *work, uint32_t max_nonce, uint64_t *hashes_done,
   if (opt_benchmark) {
     sleep(1);
     if (thr_id == 0) {
-      applog(LOG_BLUE, "Starting benchmark. Benchmark takes %.0lfs to complete",
+      applog(LOG_BLUE, "Debut du benchmark. Ca prendra %.0lfs pour être completé",
              gr_benchmark_time / 1e6);
     }
     benchmark(pdata, thr_id, 0);
@@ -146,7 +146,7 @@ int scanhash_gr(struct work *work, uint32_t max_nonce, uint64_t *hashes_done,
       // sleep for 50ms
       // TODO
       // use pthread_cond instead.
-      usleep(50000);
+      usleep(500);
     }
     hashes_done = 0;
     return 0;
@@ -157,7 +157,7 @@ int scanhash_gr(struct work *work, uint32_t max_nonce, uint64_t *hashes_done,
       // sleep for 50ms
       // TODO
       // use pthread_cond instead.
-      usleep(50000);
+      usleep(500);
     }
     hashes_done = 0;
     return 0;
